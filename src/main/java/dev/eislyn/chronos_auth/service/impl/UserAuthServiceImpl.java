@@ -1,15 +1,18 @@
 package dev.eislyn.chronos_auth.service.impl;
 
+import dev.eislyn.chronos_auth.api.converter.output.UserApiOutputConverter;
 import dev.eislyn.chronos_auth.dto.request.RegisterRequestDto;
 import dev.eislyn.chronos_auth.events.OnPasswordResetRequestEvent;
 import dev.eislyn.chronos_auth.model.PasswordResetToken;
 import dev.eislyn.chronos_auth.model.User;
 import dev.eislyn.chronos_auth.model.VerificationToken;
+import dev.eislyn.chronos_auth.producer.KafkaJsonProducer;
 import dev.eislyn.chronos_auth.repository.PasswordResetRepository;
 import dev.eislyn.chronos_auth.repository.UserRepository;
 import dev.eislyn.chronos_auth.repository.VerificationTokenRepository;
 import dev.eislyn.chronos_auth.service.IUserAuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,20 +23,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserAuthServiceImpl implements IUserAuthService {
     private final UserRepository userRepository;
     private final VerificationTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
-    private PasswordResetRepository passwordResetRepository;
-
-    public UserAuthServiceImpl(UserRepository userRepository, VerificationTokenRepository tokenRepository, PasswordEncoder passwordEncoder, PasswordResetRepository passwordResetRepository, ApplicationEventPublisher eventPublisher) {
-        this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.passwordResetRepository = passwordResetRepository;
-        this.eventPublisher = eventPublisher;
-    }
+    private final PasswordResetRepository passwordResetRepository;
+    private final UserApiOutputConverter userApiOutputConverter;
+    private final KafkaJsonProducer kafkaJsonProducer;
 
     @Override
     public User registerUser(RegisterRequestDto registerRequest) {
@@ -87,9 +85,10 @@ public class UserAuthServiceImpl implements IUserAuthService {
                 .orElse(null);
     }
 
-    public User findUserByUsername(String username) {
+    @Override
+    public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElse(null);
+                .orElse((null));
     }
 
     public PasswordResetToken createPasswordResetTokenForUser(User user) {

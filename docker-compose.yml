@@ -123,6 +123,18 @@ services:
       - controller-2
       - controller-3
 
+  prometheus:
+    image: prom/prometheus:v3.0.0
+    network_mode: host
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./data/prometheus/config:/etc/prometheus/
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+    ports:
+      - 9090:9090
+
   application:
     container_name: auth-application
     build:
