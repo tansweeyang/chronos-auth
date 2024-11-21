@@ -99,7 +99,7 @@ public class AuthController {
             String token = tokenService.generateToken(authentication);
             return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK, "Login successful", token));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GenericResponse<>("error", HttpStatus.UNAUTHORIZED, "Login failed: Wrong username or password. Please try again.", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResponse<>("error", HttpStatus.UNAUTHORIZED, "Login failed: Wrong username or password. Please try again.", null));
         }
     }
 
