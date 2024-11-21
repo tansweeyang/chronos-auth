@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -20,7 +23,7 @@ public class VerificationToken {
     private static final int EXPIRATION = 60 * 24;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String token;
@@ -29,18 +32,16 @@ public class VerificationToken {
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
-    private Date expiryDate;
+    private LocalDateTime expiryDate;
 
     public VerificationToken (String token, User user) {
         this.token =  token;
         this.user = user;
+        this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    private Date calculateExpiryDate(int expiryTimeInMinutes) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Timestamp(cal.getTime().getTime()));
-        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
-        return new Date(cal.getTime().getTime());
+    private LocalDateTime calculateExpiryDate(int expiryTimeInMinutes) {
+        return LocalDateTime.now().plus(expiryTimeInMinutes, ChronoUnit.MINUTES);
     }
 
     public User getUser() {

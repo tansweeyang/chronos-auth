@@ -21,7 +21,6 @@
         <spring-security-oauth2.version>2.5.2.RELEASE</spring-security-oauth2.version>
         <lombok.version>1.18.36</lombok.version>
         <jakarta-validation.version>3.0.2</jakarta-validation.version>
-        <hibernate-validator.version>7.0.4.Final</hibernate-validator.version>
         <spring-dotenv.version>4.0.0</spring-dotenv.version>
         <mapstruct.version>1.6.2</mapstruct.version>
         <mysql.version>8.0.33</mysql.version>
@@ -29,6 +28,7 @@
         <modelmapper.version>3.0.0</modelmapper.version>
         <jackson.version>2.18.0-rc1</jackson.version>
         <javax-mail.version>1.5.0-b01</javax-mail.version>
+        <flyway.version>9.22.3</flyway.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     </properties>
 
@@ -89,7 +89,6 @@
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>${hibernate-validator.version}</version>
         </dependency>
         <dependency>
             <groupId>me.paulschwarz</groupId>
@@ -135,6 +134,15 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
         </dependency>
 
         <!-- Testing Dependencies -->

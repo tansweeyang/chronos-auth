@@ -12,7 +12,8 @@ import lombok.*;
 @Builder
 @ToString
 public class User {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
