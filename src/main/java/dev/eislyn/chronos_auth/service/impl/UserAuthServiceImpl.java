@@ -135,4 +135,8 @@ public class UserAuthServiceImpl implements IUserAuthService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
+    public void update(User user) {
+        userRepository.save(user);
+    }
 }

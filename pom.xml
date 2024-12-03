@@ -14,7 +14,7 @@
     <artifactId>chronos-auth</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>chronos-auth</name>
-    <description>Authentication microservice for Chronos backend</description>
+    <description>Authentication microservice responsible for managing authentication.</description>
 
     <properties>
         <java.version>21</java.version>
@@ -224,5 +224,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

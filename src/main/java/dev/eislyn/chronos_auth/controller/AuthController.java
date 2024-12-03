@@ -29,6 +29,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
@@ -59,14 +61,14 @@ public class AuthController {
             User registeredUser = userAuthService.registerUser(registerRequest);
             UserMeResponseDto responseDto = userApiOutputConverter.user2UserResponseDto(registeredUser);
             eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request.getLocale(), appUrl));
-            return ResponseEntity.status(HttpStatus.CREATED).body(new GenericResponse<>("success", HttpStatus.CREATED, "User registered successfully. Verification email is sent successfully.", responseDto));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new GenericResponse<>("success", HttpStatus.CREATED.value(), "User registered successfully. Verification email is sent successfully.", responseDto));
         } catch (MailException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GenericResponse<>("error", HttpStatus.INTERNAL_SERVER_ERROR, "User registered successfully, but the verification email could not be sent: " + e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GenericResponse<>("error", HttpStatus.INTERNAL_SERVER_ERROR.value(), "User registered successfully, but the verification email could not be sent: " + e.getMessage(), null));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResponse<>("error", HttpStatus.BAD_REQUEST, "Registration failed: " + e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResponse<>("error", HttpStatus.BAD_REQUEST.value(), "Registration failed: " + e.getMessage(), null));
         } catch (Exception e) {
             log.info("Unexpected error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GenericResponse<>("error", HttpStatus.INTERNAL_SERVER_ERROR, "Registration failed: An unexpected error occurred. Please try again later.", null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GenericResponse<>("error", HttpStatus.INTERNAL_SERVER_ERROR.value(), "Registration failed: An unexpected error occurred. Please try again later.", null));
         }
     }
 
@@ -77,29 +79,51 @@ public class AuthController {
             User user = verificationToken.getUser();
             user.setEnabled(true);
             userAuthService.saveRegisteredUser(user);
-            return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK, "Email verified successfully.", null));
+            return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK.value(), "Email verified successfully.", null));
         } catch (NoSuchObjectException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GenericResponse<>("error", HttpStatus.NOT_FOUND, "Invalid or expired token. Please request again.", null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GenericResponse<>("error", HttpStatus.NOT_FOUND.value(), "Invalid or expired token. Please request again.", null));
         } catch (UserVerifiedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GenericResponse<>("error", HttpStatus.FORBIDDEN, "User is already verified.", null));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GenericResponse<>("error", HttpStatus.FORBIDDEN.value(), "User is already verified.", null));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GenericResponse<>("error", HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.", null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GenericResponse<>("error", HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred. Please try again later.", null));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<GenericResponse<String>> login(@Valid @RequestBody LoginRequestDto loginRequest) {
-        log.info("user is enabled", userDetailsService.loadUserByUsername(loginRequest.getUsername()).isEnabled());
-
-        if (!userDetailsService.loadUserByUsername(loginRequest.getUsername()).isEnabled()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GenericResponse<>("error", HttpStatus.FORBIDDEN, "Login denied. Please confirm your email.", null));
-        }
+    public ResponseEntity<GenericResponse<UserMeResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequest) {
+        UserDetails user;
         try {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            // Load the user based on the provided username
+            user = userDetailsService.loadUserByUsername(loginRequest.getUsername());
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResponse<>("error", HttpStatus.BAD_REQUEST.value(), "Login failed: Wrong username or password. Please try again.", null));
+        }
+
+        // Check if the user is enabled
+        if (!user.isEnabled()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GenericResponse<>("error", HttpStatus.FORBIDDEN.value(), "Login denied. Please confirm your email.", null));
+        }
+
+        try {
+            // Attempt authentication with the provided credentials
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
+
+            // Generate the JWT token after successful authentication
             String token = tokenService.generateToken(authentication);
-            return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK, "Login successful", token));
+
+            // Update user model
+            User userModel = userAuthService.findByUsername(user.getUsername());
+            userModel.setToken(token);
+
+            userAuthService.update(userModel);
+            UserMeResponseDto response = userApiOutputConverter.user2UserResponseDto(userModel);
+
+            // Return successful login response with the token
+            return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK.value(), "Login successful", response));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResponse<>("error", HttpStatus.UNAUTHORIZED, "Login failed: Wrong username or password. Please try again.", null));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GenericResponse<>("error", HttpStatus.FORBIDDEN.value(), "Login failed: Wrong username or password. Please try again.", null));
         }
     }
 
@@ -107,32 +131,32 @@ public class AuthController {
     public ResponseEntity<GenericResponse<String>> resetPassword(HttpServletRequest request, @RequestParam("email") String userEmail) {
         User user = userAuthService.findUserByEmail(userEmail);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GenericResponse<>("error", HttpStatus.NOT_FOUND, "User not found, please register.", null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GenericResponse<>("error", HttpStatus.NOT_FOUND.value(), "User not found, please register.", null));
         }
         PasswordResetToken token = userAuthService.createPasswordResetTokenForUser(user);
         userAuthService.sendResetPasswordEmail(user, request, appUrl, token.getToken());
 
-        return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK, "Password reset email sent successfully", null));
+        return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK.value(), "Password reset email sent successfully", null));
     }
 
     @PostMapping("/savePassword")
     public ResponseEntity<GenericResponse<String>> savePassword(@Valid @RequestBody PasswordDto passwordDto) {
         if (!passwordDto.getNewPassword().equals(passwordDto.getConfirmationPassword())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResponse<>("error", HttpStatus.BAD_REQUEST, "Password and confirm password do not match.", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GenericResponse<>("error", HttpStatus.BAD_REQUEST.value(), "Password and confirm password do not match.", null));
         }
 
         String result = userAuthService.validatePasswordResetToken(passwordDto.getToken());
 
         if (result != null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GenericResponse<>("error", HttpStatus.FORBIDDEN, "Reset password token is invalid or expired. Please request again.", null));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GenericResponse<>("error", HttpStatus.FORBIDDEN.value(), "Reset password token is invalid or expired. Please request again.", null));
         }
 
         Optional<User> user = userAuthService.getUserByPasswordResetToken(passwordDto.getToken());
         if (user.isPresent()) {
             userAuthService.changeUserPassword(user.get(), passwordDto.getNewPassword());
-            return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK, "Password is reset successfully", null));
+            return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK.value(), "Password is reset successfully", null));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GenericResponse<>("error", HttpStatus.NOT_FOUND, "User cannot be found, please register.", null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GenericResponse<>("error", HttpStatus.NOT_FOUND.value(), "User cannot be found, please register.", null));
         }
     }
 
@@ -146,6 +170,6 @@ public class AuthController {
 
         kafkaJsonProducer.sendMessage(response);
 
-        return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK, "Current logged in user retrieved successfully.", response));
+        return ResponseEntity.status(HttpStatus.OK).body(new GenericResponse<>("success", HttpStatus.OK.value(), "Current logged in user retrieved successfully.", response));
     }
 }

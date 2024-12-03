@@ -35,4 +35,6 @@ public interface IUserAuthService {
     Optional<User> getUserByPasswordResetToken(String passToken);
 
     void changeUserPassword(User user, String newPassword);
+
+    void update(User user);
 }
