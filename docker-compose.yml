@@ -4,9 +4,11 @@ services:
     container_name: auth-mysql
     image: mysql
     ports:
-      - "3308:3306"
+      - "3309:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=admin1234
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ./my.cnf:/etc/mysql/my.cnf
     networks:
       - stack
     healthcheck:
@@ -24,13 +26,13 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
     ports:
-      - "9090:9090"
+      - "9091:9090"
 
   grafana:
     image: grafana/grafana:9.5.2
     container_name: grafana
     ports:
-      - "3000:3000"
+      - "3001:3000"
     restart: unless-stopped
     volumes:
       - ./data/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
@@ -41,7 +43,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8081:8080"
     env_file:
       - .env.docker
     networks:
