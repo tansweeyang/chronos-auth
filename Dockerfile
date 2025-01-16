@@ -22,5 +22,12 @@ COPY src src
 # Build the project
 RUN mvn clean package -DskipTests
 
+# Copy the MySQL configuration file (e.g., mysqld.cnf) and set correct permissions
+COPY mysql-config/mysqld.cnf /etc/mysql/conf.d/mysqld.cnf
+RUN chmod 0444 /etc/mysql/conf.d/mysqld.cnf
+
+# Set JVM memory options
+ENV JAVA_OPTS="-Xmx512m -Xms256m -Xshare:on -XX:+UseSerialGC"
+
 # Run the application
 ENTRYPOINT ["java", "-jar", "target/application.jar"]

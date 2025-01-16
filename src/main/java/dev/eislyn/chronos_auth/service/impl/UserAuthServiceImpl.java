@@ -6,7 +6,6 @@ import dev.eislyn.chronos_auth.events.OnPasswordResetRequestEvent;
 import dev.eislyn.chronos_auth.model.PasswordResetToken;
 import dev.eislyn.chronos_auth.model.User;
 import dev.eislyn.chronos_auth.model.VerificationToken;
-import dev.eislyn.chronos_auth.producer.KafkaJsonProducer;
 import dev.eislyn.chronos_auth.repository.PasswordResetRepository;
 import dev.eislyn.chronos_auth.repository.UserRepository;
 import dev.eislyn.chronos_auth.repository.VerificationTokenRepository;
@@ -31,7 +30,6 @@ public class UserAuthServiceImpl implements IUserAuthService {
     private final ApplicationEventPublisher eventPublisher;
     private final PasswordResetRepository passwordResetRepository;
     private final UserApiOutputConverter userApiOutputConverter;
-    private final KafkaJsonProducer kafkaJsonProducer;
 
     @Override
     public User registerUser(RegisterRequestDto registerRequest) {
@@ -131,7 +129,7 @@ public class UserAuthServiceImpl implements IUserAuthService {
         return Optional.empty();
     }
 
-    public void changeUserPassword (User user, String newPassword) {
+    public void changeUserPassword(User user, String newPassword) {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }

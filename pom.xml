@@ -28,10 +28,11 @@
         <modelmapper.version>3.0.0</modelmapper.version>
         <jackson.version>2.18.0-rc1</jackson.version>
         <javax-mail.version>1.5.0-b01</javax-mail.version>
-        <flyway.version>9.22.3</flyway.version>
+        <flyway.version>11.1.1</flyway.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
         <spring-cloud-starter-netflix-eureka-client-version>4.1.0</spring-cloud-starter-netflix-eureka-client-version>
+        <time4j-tzdata-version>5.0-2024a</time4j-tzdata-version>
     </properties>
 
     <dependencies>
@@ -134,10 +135,6 @@
             <version>${javax-mail.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
@@ -184,6 +181,11 @@
             <version>${spring-cloud.version}</version>
             <type>pom</type>
             <scope>import</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.time4j</groupId>
+            <artifactId>time4j-tzdata</artifactId>
+            <version>${time4j-tzdata-version}</version>
         </dependency>
     </dependencies>
 

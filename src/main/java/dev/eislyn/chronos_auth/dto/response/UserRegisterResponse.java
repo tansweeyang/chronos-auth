@@ -1,4 +1,10 @@
 package dev.eislyn.chronos_auth.dto.response;
 
-public record UserRegitserResponse() {
+public record UserRegisterResponse(
+        Long id,
+        String email,
+        String username,
+        String roles,
+        boolean enabled
+) {
 }

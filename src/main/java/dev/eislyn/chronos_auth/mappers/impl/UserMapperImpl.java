@@ -1,13 +1,13 @@
 package dev.eislyn.chronos_auth.mappers.impl;
 
-import dev.eislyn.chronos_auth.dto.response.UserMeResponseDto;
+import dev.eislyn.chronos_auth.dto.response.UserMeResponse;
 import dev.eislyn.chronos_auth.mappers.Mapper;
 import dev.eislyn.chronos_auth.model.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserMapperImpl implements Mapper<User, UserMeResponseDto> {
+public class UserMapperImpl implements Mapper<User, UserMeResponse> {
     private ModelMapper modelMapper;
 
     public UserMapperImpl(ModelMapper modelMapper) {
@@ -15,12 +15,12 @@ public class UserMapperImpl implements Mapper<User, UserMeResponseDto> {
     }
 
     @Override
-    public UserMeResponseDto mapTo(User user) {
-        return modelMapper.map(user, UserMeResponseDto.class);
+    public UserMeResponse mapTo(User user) {
+        return modelMapper.map(user, UserMeResponse.class);
     }
 
     @Override
-    public User mapFrom(UserMeResponseDto userMeResponseDto) {
-        return modelMapper.map(userMeResponseDto, User.class);
+    public User mapFrom(UserMeResponse userMeResponse) {
+        return modelMapper.map(userMeResponse, User.class);
     }
 }
