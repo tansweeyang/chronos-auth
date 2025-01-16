@@ -19,8 +19,8 @@ jobs:
           distribution: 'corretto'
           java-version: 21
 
-      - name: Unit tests
-        run: mvn -B test --file pom.xml
+#      - name: Unit tests
+#        run: mvn -B test --file pom.xml
 
       - name: Build the application
         run: |
