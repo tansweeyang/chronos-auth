@@ -40,9 +40,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Value("${APP_URL}")
-    private final String appUrl;
-
+    private String appUrl = "http://chronos-auth:8081";
     private final TokenServiceImpl tokenService;
     private final AuthenticationManager authenticationManager;
     private final ApplicationEventPublisher eventPublisher;
