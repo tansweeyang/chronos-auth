@@ -6,10 +6,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8081:8080"
-    env_file:
-      - ./.env
-    volumes:
-      - ./src/main/resources/certs:/app/certs  # Mount the local 'certs' directory inside the container
     networks:
       - stack
 
