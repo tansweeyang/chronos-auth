@@ -8,6 +8,11 @@ services:
       - "8081:8080"
     env_file:
       - ./.env
+    volumes:
+      - ./certs:/app/certs  # Mount the local 'certs' directory inside the container
+    environment:
+      PRIVATE_KEY_PATH: "/app/certs/private.pem"  # Update paths to actual file locations
+      PUBLIC_KEY_PATH: "/app/certs/public.pem"
     networks:
       - stack
 
