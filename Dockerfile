@@ -23,7 +23,7 @@ COPY src src
 RUN mvn clean package -DskipTests
 
 # Set JVM memory options
-ENV JAVA_OPTS="-Xmx512m -Xms256m -Xshare:on -XX:+UseSerialGC"
+#ENV JAVA_OPTS="-Xmx512m -Xms256m -Xshare:on -XX:+UseSerialGC"
 
 # Run the application
 ENTRYPOINT ["sh", "-c", "env && java -jar target/application.jar"]
