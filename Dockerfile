@@ -26,4 +26,5 @@ RUN mvn clean package -DskipTests
 ENV JAVA_OPTS="-Xmx512m -Xms256m -Xshare:on -XX:+UseSerialGC"
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "target/application.jar"]
+ENTRYPOINT ["sh", "-c", "env && java -jar target/application.jar"]
+#ENTRYPOINT ["java", "-jar", "target/application.jar"]
