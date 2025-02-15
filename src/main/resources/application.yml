@@ -1,0 +1,63 @@
+management:
+  security:
+    enabled: false
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+eureka:
+  client:
+    service-url:
+      defaultZone: http://54.89.254.12:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+  logging:
+    level:
+      com.netflix.discovery: DEBUG
+      com.netflix.eureka: DEBUG
+
+server:
+  port: 8080
+
+spring:
+  main:
+    lazy-initialization: true
+  application:
+    name: chronos-auth
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      hibernate.cache.use_second_level_cache: false  # Disable second-level cache
+      hibernate.cache.use_query_cache: false  # Disable query cache
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${DATABASE_NAME}?autoReconnect=true&createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  flyway:
+    baseline-on-migration: true
+    enabled: true
+    user: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    baseline-description: "init"
+    baseline-version: 0
+    locations: classpath:/db/migration
+
+  logging:
+    level:
+      org.springframework.security: DEBUG
+
+rsa:
+  private-key: ${PRIVATE_KEY_PATH}
+  public-key: ${PUBLIC_KEY_PATH}
+
+support:
+  email: support@yourdomain.com

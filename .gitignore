@@ -38,3 +38,4 @@ build/
 .env.production
 .env.*
 /src/main/resources/**
+!/src/main/resources/application.yml
