@@ -41,3 +41,5 @@ build/
 !/src/main/resources/application.yml
 !/src/main/resources/db/migration/
 !/src/main/resources/db/migration/*.sql
+!/src/main/resources/templates/email/
+!/src/main/resources/templates/email/*.html
