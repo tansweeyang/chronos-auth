@@ -21,11 +21,11 @@ jobs:
 
       - name: Create Private and Public Key Files
         run: |
-          mkdir -p src/main/resources/keys
+          mkdir -p src/main/resources/certs
           echo "${{ secrets.PRIVATE_KEY_BASE64 }}" | base64 --decode > src/main/resources/certs/private.pem
           echo "${{ secrets.PUBLIC_KEY_BASE64 }}" | base64 --decode > src/main/resources/certs/public.pem
-          chmod 600 src/main/resources/keys/private.pem
-          chmod 644 src/main/resources/keys/public.pem
+          chmod 600 src/main/resources/certs/private.pem
+          chmod 644 src/main/resources/certs/public.pem
 
       - name: Build the application
         run: mvn -B clean package -DskipTests --file pom.xml
