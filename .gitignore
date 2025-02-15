@@ -39,4 +39,5 @@ build/
 .env.*
 /src/main/resources/**
 !/src/main/resources/application.yml
-!/src/main/resources/db/migration/**
+!/src/main/resources/db/migration/
+!/src/main/resources/db/migration/*.sql
